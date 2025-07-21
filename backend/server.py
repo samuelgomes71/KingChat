@@ -121,7 +121,10 @@ async def get_user_chats_with_folders(current_user: User = Depends(get_current_u
     if not folders:
         folders = await create_default_folders(current_user.id)
     
-    return UserChats(user=current_user, chats=chats, folders=folders)
+    # Get privacy settings
+    privacy_settings = await PrivacyService.get_user_privacy_settings(current_user.id)
+    
+    return UserChats(user=current_user, chats=chats, folders=folders, privacy_settings=privacy_settings)
 
 # Chat endpoints
 @api_router.post("/chats", response_model=Chat)
