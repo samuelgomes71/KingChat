@@ -241,30 +241,71 @@ class MessageService:
         return await MessageService.get_message_by_id(message_id, user_id)
     
     @staticmethod
-    async def forward_message(message_id: str, target_chat_id: str, user_id: str, sender_name: str) -> Optional[Message]:
-        """Forward a message to another chat"""
+    async def forward_message_unlimited(message_id: str, target_chat_ids: List[str], user_id: str, sender_name: str, add_caption: Optional[str] = None) -> dict:
+        """Forward a message to unlimited chats (KingChat advantage over WhatsApp)"""
         original_message = await MessageService.get_message_by_id(message_id, user_id)
         if not original_message:
-            return None
+            return {
+                "successful_forwards": [],
+                "failed_forwards": [{"chat_id": "unknown", "error": "Original message not found"}],
+                "total_sent": 0,
+                "total_failed": 1
+            }
         
-        # Create forwarded message
-        forwarded_data = MessageCreate(
-            chat_id=target_chat_id,
-            text=original_message.text,
-            message_type=original_message.message_type,
-            media_url=original_message.media_url
-        )
+        successful_forwards = []
+        failed_forwards = []
         
-        message = await MessageService.create_message(forwarded_data, user_id, sender_name)
-        if message:
-            # Mark as forwarded
-            messages_collection = await get_collection("messages")
-            await messages_collection.update_one(
-                {"id": message.id},
-                {"$set": {"forwarded_from": original_message.sender_id}}
-            )
+        for target_chat_id in target_chat_ids:
+            try:
+                # Check if user has access to target chat
+                target_chat = await ChatService.get_chat_by_id(target_chat_id, user_id)
+                if not target_chat:
+                    failed_forwards.append({
+                        "chat_id": target_chat_id,
+                        "error": "Chat not found or no access"
+                    })
+                    continue
+                
+                # Prepare message text
+                message_text = original_message.text
+                if add_caption and add_caption.strip():
+                    message_text = f"{add_caption}\n\n--- Mensagem encaminhada ---\n{original_message.text}"
+                
+                # Create forwarded message
+                forwarded_data = MessageCreate(
+                    chat_id=target_chat_id,
+                    text=message_text,
+                    message_type=original_message.message_type,
+                    media_url=original_message.media_url
+                )
+                
+                message = await MessageService.create_message(forwarded_data, user_id, sender_name)
+                if message:
+                    # Mark as forwarded
+                    messages_collection = await get_collection("messages")
+                    await messages_collection.update_one(
+                        {"id": message.id},
+                        {"$set": {"forwarded_from": original_message.sender_id, "is_forwarded": True}}
+                    )
+                    successful_forwards.append(target_chat_id)
+                else:
+                    failed_forwards.append({
+                        "chat_id": target_chat_id,
+                        "error": "Failed to create forwarded message"
+                    })
+                
+            except Exception as e:
+                failed_forwards.append({
+                    "chat_id": target_chat_id,
+                    "error": str(e)
+                })
         
-        return message
+        return {
+            "successful_forwards": successful_forwards,
+            "failed_forwards": failed_forwards,
+            "total_sent": len(successful_forwards),
+            "total_failed": len(failed_forwards)
+        }
     
     @staticmethod
     async def search_messages(query: str, chat_id: Optional[str] = None, user_id: str = None, limit: int = 50) -> List[Message]:
