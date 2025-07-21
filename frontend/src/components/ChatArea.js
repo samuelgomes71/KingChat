@@ -3,6 +3,8 @@ import { Button } from '../ui/button.jsx';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
 import ForwardModal from './ForwardModal';
 import PrivacySettingsModal from './PrivacySettingsModal';
+import FileUploadManager from './FileUploadManager';
+import VirtualKeyboard from './VirtualKeyboard';
 import { messageService } from '../services/messageService';
 import { privacyService } from '../services/privacyService';
 import { useToast } from '../hooks/use-toast';
@@ -21,9 +23,12 @@ const ChatArea = ({
   const [editingMessage, setEditingMessage] = useState(null);
   const [showForwardModal, setShowForwardModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showVirtualKeyboard, setShowVirtualKeyboard] = useState(false);
   const [forwardingMessage, setForwardingMessage] = useState(null);
   const [availableContacts, setAvailableContacts] = useState([]);
   const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
   const { toast } = useToast();
 
   const scrollToBottom = () => {
@@ -80,7 +85,7 @@ const ChatArea = ({
 
   const handleReply = (message) => {
     setReplyToMessage(message);
-    document.querySelector('.message-input').focus();
+    messageInputRef.current?.focus();
   };
 
   const handleEdit = (message) => {
@@ -88,7 +93,7 @@ const ChatArea = ({
     
     setEditingMessage(message);
     setNewMessage(message.text || '');
-    document.querySelector('.message-input').focus();
+    messageInputRef.current?.focus();
   };
 
   const handleDelete = async (message) => {
@@ -170,6 +175,61 @@ const ChatArea = ({
     }
   };
 
+  const handleFileUpload = () => {
+    setShowFileUpload(true);
+  };
+
+  const handleFilesSelected = async (files) => {
+    for (const fileItem of files) {
+      try {
+        // Aqui você enviaria o arquivo como mensagem
+        // Por enquanto, simularemos enviando como texto
+        const messageData = {
+          text: `📎 Arquivo: ${fileItem.name} (${formatFileSize(fileItem.file.size)})`,
+          message_type: 'file',
+          media_url: URL.createObjectURL(fileItem.file), // Para preview local
+        };
+        
+        await onSendMessage(messageData);
+        
+        toast({
+          title: "📎 Arquivo Enviado",
+          description: `${fileItem.name} foi enviado na ordem correta!`,
+        });
+      } catch (error) {
+        toast({
+          title: "❌ Erro no Envio",
+          description: `Falha ao enviar ${fileItem.name}`,
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleVirtualKeyboard = () => {
+    setShowVirtualKeyboard(true);
+    // Focar no input quando o teclado virtual abrir
+    setTimeout(() => {
+      messageInputRef.current?.focus();
+    }, 100);
+  };
+
+  const handleKeyboardTextChange = (text) => {
+    setNewMessage(text);
+    // Simular input no campo real para manter sincronização
+    if (messageInputRef.current) {
+      messageInputRef.current.value = text;
+    }
+  };
+
   const cancelReply = () => {
     setReplyToMessage(null);
   };
@@ -214,13 +274,19 @@ const ChatArea = ({
             <div className="feature" onClick={() => setShowPrivacyModal(true)}>
               🔒 Configurações de Privacidade
             </div>
-            <div className="feature">📢 Canais Premium</div>
-            <div className="feature">🤖 Bots Inteligentes</div>
-            <div className="feature">⏰ Mensagens Programadas</div>
+            <div className="feature" onClick={handleVirtualKeyboard}>
+              ⌨️ Teclado Virtual com DELETE
+            </div>
+            <div className="feature" onClick={handleFileUpload}>
+              📎 Upload Sequencial de Arquivos
+            </div>
+            <div className="feature">
+              📤 Encaminhamento Ilimitado
+            </div>
           </div>
         </div>
         
-        {/* Privacy Modal (can be opened from no-chat state for global settings) */}
+        {/* Modals that can be opened from no-chat state */}
         <PrivacySettingsModal
           isOpen={showPrivacyModal}
           onClose={() => setShowPrivacyModal(false)}
@@ -228,12 +294,29 @@ const ChatArea = ({
           onSaveSettings={handleSavePrivacySettings}
           currentUser={currentUser}
         />
+        
+        <VirtualKeyboard
+          isVisible={showVirtualKeyboard}
+          onClose={() => setShowVirtualKeyboard(false)}
+          onTextChange={handleKeyboardTextChange}
+          currentText={newMessage}
+          targetInputRef={messageInputRef}
+        />
       </div>
     );
   }
 
   return (
     <div className="chat-area">
+      {/* File Upload Manager */}
+      {showFileUpload && (
+        <FileUploadManager
+          onFilesSelected={handleFilesSelected}
+          maxFiles={10}
+          acceptedTypes="*"
+        />
+      )}
+
       {/* Messages Container */}
       <div className="messages-container">
         {isLoadingMessages && (
@@ -248,6 +331,14 @@ const ChatArea = ({
             <div className="empty-icon">💬</div>
             <p>Nenhuma mensagem ainda</p>
             <p>Seja o primeiro a enviar uma mensagem!</p>
+            <div className="quick-features">
+              <button className="feature-btn" onClick={handleFileUpload}>
+                📎 Enviar Arquivos
+              </button>
+              <button className="feature-btn" onClick={handleVirtualKeyboard}>
+                ⌨️ Teclado Virtual
+              </button>
+            </div>
           </div>
         )}
 
@@ -399,7 +490,12 @@ const ChatArea = ({
       {/* Message Input */}
       <form className="message-input-container" onSubmit={handleSendMessage}>
         <div className="input-actions">
-          <button type="button" className="attach-btn" title="Anexar arquivo">
+          <button 
+            type="button" 
+            className="attach-btn" 
+            title="Upload de Arquivos Sequencial"
+            onClick={handleFileUpload}
+          >
             <svg className="attach-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83L15 5.19"/>
             </svg>
@@ -412,6 +508,15 @@ const ChatArea = ({
             onClick={handlePrivacySettings}
           >
             🔒
+          </button>
+          
+          <button 
+            type="button" 
+            className="keyboard-btn" 
+            title="Teclado Virtual com DELETE"
+            onClick={handleVirtualKeyboard}
+          >
+            ⌨️
           </button>
           
           {chat?.type !== 'channel' && (
@@ -435,6 +540,7 @@ const ChatArea = ({
         
         <div className="input-wrapper">
           <input
+            ref={messageInputRef}
             type="text"
             className="message-input"
             placeholder={
@@ -481,6 +587,15 @@ const ChatArea = ({
         currentChat={chat}
         onSaveSettings={handleSavePrivacySettings}
         currentUser={currentUser}
+      />
+
+      {/* Virtual Keyboard */}
+      <VirtualKeyboard
+        isVisible={showVirtualKeyboard}
+        onClose={() => setShowVirtualKeyboard(false)}
+        onTextChange={handleKeyboardTextChange}
+        currentText={newMessage}
+        targetInputRef={messageInputRef}
       />
     </div>
   );
