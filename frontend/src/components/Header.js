@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
 
 const Header = ({ currentChat, onProfileClick }) => {
   return (
