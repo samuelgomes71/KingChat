@@ -784,6 +784,12 @@ class KingChatAPITester:
         self.test_user_data_with_folders()
         self.test_search_functionality()
         self.test_advanced_message_features()
+        
+        # NEW ADVANCED FEATURES TESTING
+        self.test_unlimited_message_forwarding()
+        self.test_privacy_settings_management()
+        self.test_enhanced_message_features()
+        
         self.test_chat_join_leave()
         self.test_error_handling()
         
@@ -817,7 +823,21 @@ class KingChatAPITester:
             "Get user chats with folders"
         ]
         
+        print("\n🚀 NEW KINGCHAT ADVANCED FEATURES STATUS:")
+        advanced_tests = [
+            "Get contacts for forward", "Unlimited message forwarding", 
+            "Get privacy settings", "Update global privacy settings",
+            "Update contact privacy settings", "Get contact privacy settings",
+            "User data includes privacy settings", "Forwarded message marking"
+        ]
+        
         for test_name in critical_tests:
+            result = next((r for r in self.test_results if r['test'] == test_name), None)
+            if result:
+                status = "✅" if result['success'] else "❌"
+                print(f"   {status} {test_name}")
+        
+        for test_name in advanced_tests:
             result = next((r for r in self.test_results if r['test'] == test_name), None)
             if result:
                 status = "✅" if result['success'] else "❌"
