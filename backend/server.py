@@ -14,12 +14,15 @@ import uuid
 from models import (
     User, UserCreate, UserUpdate, Chat, ChatCreate, ChatUpdate, 
     Message, MessageCreate, MessageUpdate, Folder, FolderCreate,
-    ChatType, MessageType, FolderType, UserChats, MessageResponse
+    ChatType, MessageType, FolderType, UserChats, MessageResponse,
+    UserPrivacySettings, ContactPrivacyUpdate, PrivacySettingsUpdate,
+    ForwardMessageRequest, ForwardMessageResponse, ContactForForward
 )
 from database import connect_to_mongo, close_mongo_connection, get_collection
 from auth import get_current_user, create_demo_user, create_demo_token
 from services.chat_service import ChatService
 from services.message_service import MessageService
+from services.privacy_service import PrivacyService
 
 # Configure logging
 logging.basicConfig(
