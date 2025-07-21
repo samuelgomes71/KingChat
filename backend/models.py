@@ -258,6 +258,17 @@ class PollCreate(BaseModel):
 class PollVote(BaseModel):
     option_ids: List[str]
 
+# Forward Models
+class ForwardMessageRequest(BaseModel):
+    target_chat_ids: List[str]  # Multiple chat IDs for unlimited forwarding
+    add_caption: Optional[str] = None  # Optional caption to add
+
+class ForwardMessageResponse(BaseModel):
+    successful_forwards: List[str]  # Chat IDs where forward succeeded
+    failed_forwards: List[Dict[str, str]]  # Chat IDs and error messages where forward failed
+    total_sent: int
+    total_failed: int
+
 # Response Models
 class ChatWithMessages(BaseModel):
     chat: Chat
@@ -268,10 +279,12 @@ class UserChats(BaseModel):
     user: User
     chats: List[Chat]
     folders: List[Folder]
+    privacy_settings: Optional[UserPrivacySettings] = None
 
 class MessageResponse(BaseModel):
     message: Message
     reply_to_message: Optional[Message] = None
+    can_see_read_receipt: bool = True  # Based on privacy settings
 
 # Search Models
 class SearchResult(BaseModel):
@@ -287,3 +300,12 @@ class SearchRequest(BaseModel):
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
     limit: int = 50
+
+# Contact Models for Forward Selection
+class ContactForForward(BaseModel):
+    id: str
+    name: str
+    avatar: Optional[str] = None
+    type: ChatType  # private, group, channel, bot
+    is_online: Optional[bool] = None
+    last_seen: Optional[datetime] = None
