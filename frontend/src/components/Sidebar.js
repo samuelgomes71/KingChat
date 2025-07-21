@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
-import { Badge } from './ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Badge } from '../ui/badge';
 
 const Sidebar = ({ chats, currentChatId, onChatSelect, onNewChat }) => {
   const [searchTerm, setSearchTerm] = useState('');
