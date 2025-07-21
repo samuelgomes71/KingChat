@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '../ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
+import { Button } from '../ui/button.jsx';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
 
 const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
   const [newMessage, setNewMessage] = useState('');
