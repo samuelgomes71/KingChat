@@ -55,6 +55,46 @@ class UserUpdate(BaseModel):
     bio: Optional[str] = None
     avatar: Optional[str] = None
 
+# Privacy Settings Models
+class ContactPrivacySettings(BaseModel):
+    contact_user_id: str
+    # Read receipts - can this contact see when I read their messages
+    show_read_receipts_to_contact: bool = True
+    # Can I see when this contact reads my messages
+    can_see_contact_read_receipts: bool = True
+    # Last seen visibility
+    show_last_seen_to_contact: bool = True
+    can_see_contact_last_seen: bool = True
+    # Online status
+    show_online_status_to_contact: bool = True
+    can_see_contact_online_status: bool = True
+
+class UserPrivacySettings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    # Global defaults
+    default_show_read_receipts: bool = True
+    default_show_last_seen: bool = True
+    default_show_online_status: bool = True
+    # Per-contact settings
+    contact_settings: List[ContactPrivacySettings] = []
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PrivacySettingsUpdate(BaseModel):
+    default_show_read_receipts: Optional[bool] = None
+    default_show_last_seen: Optional[bool] = None
+    default_show_online_status: Optional[bool] = None
+
+class ContactPrivacyUpdate(BaseModel):
+    contact_user_id: str
+    show_read_receipts_to_contact: Optional[bool] = None
+    can_see_contact_read_receipts: Optional[bool] = None
+    show_last_seen_to_contact: Optional[bool] = None
+    can_see_contact_last_seen: Optional[bool] = None
+    show_online_status_to_contact: Optional[bool] = None
+    can_see_contact_online_status: Optional[bool] = None
+
 # Chat Models
 class Chat(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
