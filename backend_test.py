@@ -466,19 +466,248 @@ class KingChatAPITester:
                     self.log_test("Mark message as read", False, f"Status: {response.status_code}")
             except Exception as e:
                 self.log_test("Mark message as read", False, f"Exception: {str(e)}")
+    
+    def test_unlimited_message_forwarding(self):
+        """Test unlimited message forwarding (KingChat advantage!)"""
+        print("\n📤 Testing Unlimited Message Forwarding...")
         
-        # Test forward message (if we have multiple chats)
-        if hasattr(self, 'test_message_id') and hasattr(self, 'test_group_chat_id'):
+        if not self.auth_token:
+            self.log_test("Unlimited forwarding", False, "No authentication token")
+            return
+        
+        # Test get contacts for forward
+        try:
+            response = self.make_request('GET', '/contacts/for-forward')
+            if response.status_code == 200:
+                contacts = response.json()
+                self.forward_contacts = contacts
+                self.log_test("Get contacts for forward", True, f"Found {len(contacts)} contacts available for forwarding")
+            else:
+                self.log_test("Get contacts for forward", False, f"Status: {response.status_code}")
+                self.forward_contacts = []
+        except Exception as e:
+            self.log_test("Get contacts for forward", False, f"Exception: {str(e)}")
+            self.forward_contacts = []
+        
+        # Test unlimited forwarding (if we have message and multiple chats)
+        if hasattr(self, 'test_message_id') and len(getattr(self, 'forward_contacts', [])) >= 2:
             try:
-                response = self.make_request('POST', 
-                    f'/messages/{self.test_message_id}/forward?target_chat_id={self.test_group_chat_id}')
+                # Select multiple target chats for unlimited forwarding
+                target_chat_ids = [contact['id'] for contact in self.forward_contacts[:3]]  # Forward to first 3 contacts
+                
+                forward_data = {
+                    "target_chat_ids": target_chat_ids,
+                    "add_caption": "🚀 Esta mensagem foi encaminhada via KingChat - sem limites!"
+                }
+                
+                response = self.make_request('POST', f'/messages/{self.test_message_id}/forward-unlimited', json=forward_data)
                 if response.status_code == 200:
-                    forwarded_message = response.json()
-                    self.log_test("Forward message", True, f"Forwarded to: {self.test_group_chat_id}")
+                    result = response.json()
+                    successful = result.get('successful_forwards', [])
+                    failed = result.get('failed_forwards', [])
+                    total_sent = result.get('total_sent', 0)
+                    
+                    self.log_test("Unlimited message forwarding", True, 
+                                f"Sent to {total_sent} chats, {len(failed)} failed. KingChat advantage: no 5-contact limit!")
+                    
+                    # Verify response format
+                    if 'successful_forwards' in result and 'failed_forwards' in result and 'total_sent' in result:
+                        self.log_test("Forward response format", True, "Response contains all required fields")
+                    else:
+                        self.log_test("Forward response format", False, f"Missing fields in response: {result.keys()}")
+                        
                 else:
-                    self.log_test("Forward message", False, f"Status: {response.status_code}")
+                    self.log_test("Unlimited message forwarding", False, f"Status: {response.status_code}", response.text)
             except Exception as e:
-                self.log_test("Forward message", False, f"Exception: {str(e)}")
+                self.log_test("Unlimited message forwarding", False, f"Exception: {str(e)}")
+        else:
+            self.log_test("Unlimited message forwarding", False, "No test message or insufficient contacts for testing")
+        
+        # Test forwarding with empty target list
+        if hasattr(self, 'test_message_id'):
+            try:
+                forward_data = {
+                    "target_chat_ids": [],
+                    "add_caption": "Test empty list"
+                }
+                
+                response = self.make_request('POST', f'/messages/{self.test_message_id}/forward-unlimited', json=forward_data)
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get('total_sent', 0) == 0:
+                        self.log_test("Forward to empty list", True, "Correctly handled empty target list")
+                    else:
+                        self.log_test("Forward to empty list", False, f"Unexpected result: {result}")
+                else:
+                    self.log_test("Forward to empty list", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Forward to empty list", False, f"Exception: {str(e)}")
+    
+    def test_privacy_settings_management(self):
+        """Test privacy settings management (KingChat granular control)"""
+        print("\n🔒 Testing Privacy Settings Management...")
+        
+        if not self.auth_token:
+            self.log_test("Privacy settings", False, "No authentication token")
+            return
+        
+        # Test get user privacy settings
+        try:
+            response = self.make_request('GET', '/privacy')
+            if response.status_code == 200:
+                privacy_settings = response.json()
+                self.current_privacy = privacy_settings
+                
+                # Verify default settings structure
+                required_fields = ['user_id', 'default_show_read_receipts', 'default_show_last_seen', 'default_show_online_status', 'contact_settings']
+                missing_fields = [field for field in required_fields if field not in privacy_settings]
+                
+                if not missing_fields:
+                    self.log_test("Get privacy settings", True, f"Retrieved privacy settings with all required fields")
+                else:
+                    self.log_test("Get privacy settings", False, f"Missing fields: {missing_fields}")
+            else:
+                self.log_test("Get privacy settings", False, f"Status: {response.status_code}")
+                self.current_privacy = None
+        except Exception as e:
+            self.log_test("Get privacy settings", False, f"Exception: {str(e)}")
+            self.current_privacy = None
+        
+        # Test update global privacy settings
+        try:
+            update_data = {
+                "default_show_read_receipts": False,
+                "default_show_last_seen": True,
+                "default_show_online_status": False
+            }
+            
+            response = self.make_request('PUT', '/privacy', json=update_data)
+            if response.status_code == 200:
+                updated_settings = response.json()
+                
+                # Verify updates were applied
+                if (updated_settings.get('default_show_read_receipts') == False and 
+                    updated_settings.get('default_show_online_status') == False):
+                    self.log_test("Update global privacy settings", True, "Global privacy settings updated successfully")
+                else:
+                    self.log_test("Update global privacy settings", False, f"Settings not updated correctly: {updated_settings}")
+            else:
+                self.log_test("Update global privacy settings", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("Update global privacy settings", False, f"Exception: {str(e)}")
+        
+        # Test update contact-specific privacy settings
+        if hasattr(self, 'forward_contacts') and self.forward_contacts:
+            try:
+                test_contact_id = self.forward_contacts[0]['id']
+                
+                contact_update = {
+                    "contact_user_id": test_contact_id,
+                    "show_read_receipts_to_contact": False,
+                    "show_last_seen_to_contact": True,
+                    "show_online_status_to_contact": False
+                }
+                
+                response = self.make_request('PUT', '/privacy/contacts', json=contact_update)
+                if response.status_code == 200:
+                    updated_settings = response.json()
+                    
+                    # Check if contact settings were added
+                    contact_settings = updated_settings.get('contact_settings', [])
+                    contact_found = any(c.get('contact_user_id') == test_contact_id for c in contact_settings)
+                    
+                    if contact_found:
+                        self.log_test("Update contact privacy settings", True, f"Contact-specific privacy updated for {test_contact_id}")
+                    else:
+                        self.log_test("Update contact privacy settings", False, "Contact settings not found in response")
+                else:
+                    self.log_test("Update contact privacy settings", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Update contact privacy settings", False, f"Exception: {str(e)}")
+        
+        # Test get specific contact privacy settings
+        if hasattr(self, 'forward_contacts') and self.forward_contacts:
+            try:
+                test_contact_id = self.forward_contacts[0]['id']
+                
+                response = self.make_request('GET', f'/privacy/contacts/{test_contact_id}')
+                if response.status_code == 200:
+                    contact_privacy = response.json()
+                    
+                    # Verify contact privacy structure
+                    required_fields = ['contact_user_id', 'show_read_receipts_to_contact', 'show_last_seen_to_contact', 'show_online_status_to_contact']
+                    missing_fields = [field for field in required_fields if field not in contact_privacy]
+                    
+                    if not missing_fields:
+                        self.log_test("Get contact privacy settings", True, f"Retrieved contact privacy for {test_contact_id}")
+                    else:
+                        self.log_test("Get contact privacy settings", False, f"Missing fields: {missing_fields}")
+                else:
+                    self.log_test("Get contact privacy settings", False, f"Status: {response.status_code}")
+            except Exception as e:
+                self.log_test("Get contact privacy settings", False, f"Exception: {str(e)}")
+    
+    def test_enhanced_message_features(self):
+        """Test enhanced message features with privacy integration"""
+        print("\n✨ Testing Enhanced Message Features...")
+        
+        if not self.auth_token:
+            self.log_test("Enhanced message features", False, "No authentication token")
+            return
+        
+        # Test that user data includes privacy settings
+        try:
+            response = self.make_request('GET', '/users/chats')
+            if response.status_code == 200:
+                user_data = response.json()
+                
+                if 'privacy_settings' in user_data and user_data['privacy_settings']:
+                    privacy = user_data['privacy_settings']
+                    if 'default_show_read_receipts' in privacy:
+                        self.log_test("User data includes privacy settings", True, "Privacy settings integrated in user data response")
+                    else:
+                        self.log_test("User data includes privacy settings", False, "Privacy settings missing required fields")
+                else:
+                    self.log_test("User data includes privacy settings", False, "Privacy settings not included in user data")
+            else:
+                self.log_test("User data includes privacy settings", False, f"Status: {response.status_code}")
+        except Exception as e:
+            self.log_test("User data includes privacy settings", False, f"Exception: {str(e)}")
+        
+        # Test forwarded message marking
+        if hasattr(self, 'test_message_id') and hasattr(self, 'forward_contacts') and self.forward_contacts:
+            try:
+                # First forward a message
+                target_chat_id = self.forward_contacts[0]['id']
+                forward_data = {
+                    "target_chat_ids": [target_chat_id],
+                    "add_caption": "Test forwarded message marking"
+                }
+                
+                response = self.make_request('POST', f'/messages/{self.test_message_id}/forward-unlimited', json=forward_data)
+                if response.status_code == 200:
+                    # Now check if we can retrieve messages and see forwarded marking
+                    messages_response = self.make_request('GET', f'/chats/{target_chat_id}/messages?limit=5')
+                    if messages_response.status_code == 200:
+                        messages = messages_response.json()
+                        
+                        # Look for forwarded message
+                        forwarded_found = False
+                        for message in messages:
+                            if message.get('forwarded_from') or message.get('is_forwarded'):
+                                forwarded_found = True
+                                break
+                        
+                        if forwarded_found:
+                            self.log_test("Forwarded message marking", True, "Forwarded messages properly marked with forwarded_from field")
+                        else:
+                            self.log_test("Forwarded message marking", False, "Forwarded messages not properly marked")
+                    else:
+                        self.log_test("Forwarded message marking", False, f"Could not retrieve messages: {messages_response.status_code}")
+                else:
+                    self.log_test("Forwarded message marking", False, f"Forward failed: {response.status_code}")
+            except Exception as e:
+                self.log_test("Forwarded message marking", False, f"Exception: {str(e)}")
     
     def test_chat_join_leave(self):
         """Test joining and leaving chats"""
