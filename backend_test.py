@@ -303,6 +303,7 @@ class KingChatAPITester:
         if hasattr(self, 'test_message_id'):
             try:
                 reply_data = {
+                    "chat_id": test_chat_id,
                     "text": "Esta é uma resposta à mensagem anterior! 💬",
                     "message_type": "text",
                     "reply_to": self.test_message_id
