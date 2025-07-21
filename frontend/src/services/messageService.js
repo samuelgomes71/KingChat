@@ -96,6 +96,28 @@ export const messageService = {
     }
   },
 
+  // Forward message to unlimited contacts
+  async forwardMessageUnlimited(messageId, forwardData) {
+    try {
+      const response = await api.post(`/messages/${messageId}/forward-unlimited`, forwardData);
+      return response.data;
+    } catch (error) {
+      console.error('Forward message unlimited failed:', error);
+      throw error;
+    }
+  },
+
+  // Get contacts for forwarding
+  async getContactsForForward() {
+    try {
+      const response = await api.get('/contacts/for-forward');
+      return response.data;
+    } catch (error) {
+      console.error('Get contacts for forward failed:', error);
+      throw error;
+    }
+  },
+
   // Search messages
   async searchMessages(query, chatId = null, limit = 50) {
     try {
