@@ -1953,7 +1953,599 @@
   transform: scale(1.1);
 }
 
-/* Responsive adjustments */
+/* File Upload Manager Styles */
+.file-upload-manager {
+  background: var(--king-white);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 20px var(--king-shadow);
+  margin: 15px 0;
+}
+
+.upload-header h4 {
+  margin: 0 0 8px 0;
+  color: var(--king-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.upload-info {
+  margin: 0 0 15px 0;
+  font-size: 13px;
+  color: var(--king-text-secondary);
+  line-height: 1.4;
+  background: rgba(169, 123, 80, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.file-input-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.upload-btn {
+  background: var(--king-accent);
+  color: var(--king-white);
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+  background: var(--king-primary);
+  transform: translateY(-1px);
+}
+
+.files-list {
+  border: 2px dashed var(--king-secondary);
+  border-radius: 12px;
+  padding: 15px;
+  background: var(--king-background);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--king-text-primary);
+}
+
+.file-count {
+  background: var(--king-accent);
+  color: var(--king-white);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--king-white);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: grab;
+}
+
+.file-item:hover {
+  border-color: var(--king-secondary);
+  box-shadow: 0 2px 8px var(--king-shadow);
+}
+
+.file-item.uploading {
+  border-color: var(--king-accent);
+  background: rgba(169, 123, 80, 0.05);
+}
+
+.file-item.completed {
+  border-color: var(--king-success);
+  background: rgba(107, 163, 104, 0.05);
+}
+
+.file-item.error {
+  border-color: var(--king-danger);
+  background: rgba(181, 82, 59, 0.05);
+}
+
+.file-order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--king-accent);
+  color: var(--king-white);
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.file-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--king-text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-details {
+  font-size: 12px;
+  color: var(--king-text-secondary);
+}
+
+.upload-progress {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--king-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--king-accent), var(--king-primary));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: var(--king-accent);
+  font-weight: 600;
+  min-width: 35px;
+}
+
+.file-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.status-icon {
+  font-size: 16px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: var(--king-danger);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.remove-file-btn:hover {
+  background: rgba(181, 82, 59, 0.1);
+  transform: scale(1.1);
+}
+
+.upload-tips {
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--king-background);
+  border-radius: 10px;
+  border-left: 4px solid var(--king-accent);
+}
+
+.upload-tips h5 {
+  margin: 0 0 10px 0;
+  color: var(--king-accent);
+  font-size: 14px;
+}
+
+.upload-tips ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--king-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.upload-tips li {
+  margin-bottom: 4px;
+}
+
+/* Virtual Keyboard Styles */
+.virtual-keyboard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.virtual-keyboard {
+  background: var(--king-white);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 800px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(74, 46, 20, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.keyboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px 15px 25px;
+  background: linear-gradient(135deg, var(--king-primary), var(--king-accent));
+  color: var(--king-white);
+  border-radius: 20px 20px 0 0;
+}
+
+.keyboard-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.keyboard-features {
+  display: flex;
+  gap: 8px;
+}
+
+.feature-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.keyboard-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: var(--king-white);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.keyboard-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.text-preview {
+  background: var(--king-background);
+  padding: 15px 25px;
+  border-bottom: 1px solid var(--king-secondary);
+  min-height: 60px;
+}
+
+.preview-text {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--king-text-primary);
+  min-height: 20px;
+  word-wrap: break-word;
+}
+
+.char {
+  position: relative;
+}
+
+.char.cursor-before::before {
+  content: '|';
+  position: absolute;
+  left: -1px;
+  color: var(--king-accent);
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+.cursor {
+  color: var(--king-accent);
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.keyboard-nav {
+  display: flex;
+  padding: 15px 25px 10px 25px;
+  gap: 10px;
+}
+
+.nav-btn {
+  flex: 1;
+  background: var(--king-secondary);
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  color: var(--king-text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-btn.active {
+  background: var(--king-accent);
+  color: var(--king-white);
+}
+
+.nav-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--king-shadow);
+}
+
+.keyboard-keys {
+  padding: 0 25px;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.key-btn {
+  flex: 1;
+  min-width: 35px;
+  height: 45px;
+  background: var(--king-white);
+  border: 2px solid var(--king-secondary);
+  border-radius: 8px;
+  color: var(--king-text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.key-btn:hover {
+  background: var(--king-secondary);
+  transform: scale(1.05);
+}
+
+.key-btn:active {
+  transform: scale(0.95);
+  background: var(--king-accent);
+  color: var(--king-white);
+}
+
+.keyboard-special {
+  padding: 10px 25px 25px 25px;
+}
+
+.special-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.special-key {
+  background: var(--king-secondary);
+  border: 2px solid var(--king-secondary);
+  border-radius: 8px;
+  color: var(--king-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  height: 45px;
+}
+
+.special-key:hover {
+  background: var(--king-accent);
+  color: var(--king-white);
+  transform: translateY(-1px);
+}
+
+.special-key:active {
+  transform: scale(0.95);
+}
+
+.special-key.active {
+  background: var(--king-accent);
+  color: var(--king-white);
+  border-color: var(--king-accent);
+}
+
+.space {
+  flex: 2;
+  font-size: 14px;
+}
+
+.cursor-key {
+  min-width: 45px;
+  font-size: 18px;
+}
+
+.backspace-key {
+  flex: 1.2;
+  font-size: 11px;
+}
+
+.delete-key {
+  flex: 1.2;
+  font-size: 11px;
+}
+
+.kingchat-exclusive {
+  background: linear-gradient(135deg, var(--king-primary), var(--king-accent));
+  color: var(--king-white);
+  border-color: var(--king-primary);
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+}
+
+.kingchat-exclusive::before {
+  content: '👑';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.kingchat-exclusive:hover {
+  background: linear-gradient(135deg, var(--king-accent), var(--king-premium));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(169, 123, 80, 0.4);
+}
+
+.enter-key {
+  flex: 1.2;
+  font-size: 11px;
+}
+
+.keyboard-tips {
+  padding: 15px 25px;
+  background: var(--king-background);
+  border-top: 1px solid var(--king-secondary);
+}
+
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--king-text-secondary);
+}
+
+.tip.exclusive {
+  color: var(--king-accent);
+  font-weight: 600;
+}
+
+.tip-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .virtual-keyboard {
+    max-height: 80vh;
+  }
+  
+  .keyboard-header {
+    padding: 15px 20px 10px 20px;
+  }
+  
+  .keyboard-header h4 {
+    font-size: 16px;
+  }
+  
+  .text-preview,
+  .keyboard-nav,
+  .keyboard-keys,
+  .keyboard-special,
+  .keyboard-tips {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  .key-btn {
+    min-width: 30px;
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .special-key {
+    height: 40px;
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  
+  .file-upload-manager {
+    padding: 15px;
+  }
+  
+  .file-input-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .upload-btn {
+    width: 100%;
+  }
+  
+  .file-item {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .file-order {
+    width: 25px;
+    height: 25px;
+    font-size: 11px;
+  }
+}
 @media (max-width: 768px) {
   .forward-modal,
   .privacy-modal {
