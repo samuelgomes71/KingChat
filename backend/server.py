@@ -317,7 +317,41 @@ async def search_messages(
     """Search messages"""
     return await MessageService.search_messages(q, chat_id, current_user.id, limit)
 
-# Folder endpoints
+# Privacy endpoints
+@api_router.get("/privacy", response_model=UserPrivacySettings)
+async def get_privacy_settings(current_user: User = Depends(get_current_user)):
+    """Get user's privacy settings"""
+    return await PrivacyService.get_user_privacy_settings(current_user.id)
+
+@api_router.put("/privacy", response_model=UserPrivacySettings)
+async def update_privacy_settings(
+    settings_update: PrivacySettingsUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update global privacy settings"""
+    return await PrivacyService.update_global_privacy_settings(
+        current_user.id, 
+        settings_update.dict()
+    )
+
+@api_router.put("/privacy/contacts", response_model=UserPrivacySettings)
+async def update_contact_privacy(
+    contact_update: ContactPrivacyUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update privacy settings for a specific contact"""
+    return await PrivacyService.update_contact_privacy_settings(
+        current_user.id, 
+        contact_update
+    )
+
+@api_router.get("/privacy/contacts/{contact_id}")
+async def get_contact_privacy(
+    contact_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get privacy settings for a specific contact"""
+    return await PrivacyService.get_contact_privacy_settings(current_user.id, contact_id)
 @api_router.get("/folders", response_model=List[Folder])
 async def get_folders(current_user: User = Depends(get_current_user)):
     """Get user's chat folders"""
