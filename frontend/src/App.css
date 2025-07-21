@@ -1306,7 +1306,8 @@
 
 .attach-btn,
 .schedule-btn,
-.poll-btn {
+.poll-btn,
+.privacy-btn {
   background: transparent;
   border: none;
   width: 40px;
@@ -1318,13 +1319,35 @@
   color: var(--king-accent);
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 16px;
 }
 
 .attach-btn:hover,
 .schedule-btn:hover,
-.poll-btn:hover {
+.poll-btn:hover,
+.privacy-btn:hover {
   background: var(--king-secondary);
   transform: scale(1.1);
+}
+
+.privacy-btn {
+  font-size: 18px;
+}
+
+/* Forwarded message info */
+.forwarded-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--king-accent);
+  margin-bottom: 5px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.own-message .forwarded-info {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .attach-icon,
