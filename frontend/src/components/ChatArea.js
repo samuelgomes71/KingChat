@@ -2,12 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button.jsx';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
 
-const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
+const ChatArea = ({ 
+  chat, 
+  messages, 
+  isLoadingMessages, 
+  onSendMessage, 
+  onEditMessage, 
+  onDeleteMessage, 
+  currentUser 
+}) => {
   const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -18,87 +24,27 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    const messageData = {
+      text: newMessage,
+      message_type: 'text',
+      reply_to: replyToMessage?.id || null,
+    };
+
     if (editingMessage) {
-      // Edit message
-      setMessages(prev => prev.map(msg => 
-        msg.id === editingMessage.id 
-          ? { ...msg, text: newMessage, isEdited: true }
-          : msg
-      ));
+      // Edit existing message
+      await onEditMessage(editingMessage.id, newMessage);
       setEditingMessage(null);
     } else {
       // Send new message
-      const message = {
-        id: Date.now(),
-        text: newMessage,
-        sender: "Você",
-        time: new Date().toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        isOwn: true,
-        canEdit: true,
-        replyTo: replyToMessage?.id || null
-      };
-      
-      setMessages(prev => [...prev, message]);
-      onSendMessage(message);
+      await onSendMessage(messageData);
     }
-    
+
     setNewMessage('');
     setReplyToMessage(null);
-    
-    // Simulate bot/user response
-    if (chat?.type !== 'channel') {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        let response = "";
-        
-        if (chat?.type === 'bot') {
-          const botResponses = [
-            "🤖 Processando sua solicitação...",
-            "✅ Comando executado com sucesso!",
-            "📊 Aqui estão os dados que você pediu:",
-            "🎯 Perfeito! Mais alguma coisa?",
-            "🔍 Encontrei algumas informações interessantes:",
-            "⚡ Funcionalidade ativada no KingChat!"
-          ];
-          response = botResponses[Math.floor(Math.random() * botResponses.length)];
-        } else {
-          const responses = [
-            "Entendi! 👍",
-            "Interessante!",
-            "Claro, vamos conversar sobre isso",
-            "Obrigado pela mensagem! 😊",
-            "Concordo completamente",
-            "Que legal! Conte-me mais",
-            "Excelente ponto de vista!",
-            "Vamos marcar para conversarmos melhor"
-          ];
-          response = responses[Math.floor(Math.random() * responses.length)];
-        }
-        
-        const responseMessage = {
-          id: Date.now() + 1,
-          text: response,
-          sender: chat.name,
-          time: new Date().toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
-          isOwn: false,
-          canEdit: false,
-          isBot: chat?.type === 'bot'
-        };
-        
-        setMessages(prev => [...prev, responseMessage]);
-      }, 2000);
-    }
   };
 
   const handleKeyPress = (e) => {
@@ -114,14 +60,19 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
   };
 
   const handleEdit = (message) => {
+    if (message.sender_id !== currentUser?.id) return;
+    
     setEditingMessage(message);
-    setNewMessage(message.text);
+    setNewMessage(message.text || '');
     document.querySelector('.message-input').focus();
   };
 
-  const handleForward = (message) => {
-    console.log('Forward message:', message);
-    // Implement forward functionality
+  const handleDelete = async (message) => {
+    if (message.sender_id !== currentUser?.id) return;
+    
+    if (window.confirm('Tem certeza que deseja excluir esta mensagem?')) {
+      await onDeleteMessage(message.id);
+    }
   };
 
   const cancelReply = () => {
@@ -131,6 +82,26 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
   const cancelEdit = () => {
     setEditingMessage(null);
     setNewMessage('');
+  };
+
+  const getReplyMessage = (replyId) => {
+    return messages.find(msg => msg.id === replyId);
+  };
+
+  const formatTime = (timestamp) => {
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    } catch {
+      return '';
+    }
+  };
+
+  const isOwnMessage = (message) => {
+    return message.sender_id === currentUser?.id;
   };
 
   if (!chat) {
@@ -155,39 +126,51 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
     );
   }
 
-  const getReplyMessage = (replyId) => {
-    return messages.find(msg => msg.id === replyId);
-  };
-
   return (
     <div className="chat-area">
       {/* Messages Container */}
       <div className="messages-container">
+        {isLoadingMessages && (
+          <div className="loading-messages">
+            <div className="loading-spinner"></div>
+            <p>Carregando mensagens...</p>
+          </div>
+        )}
+
+        {!isLoadingMessages && messages.length === 0 && (
+          <div className="empty-messages">
+            <div className="empty-icon">💬</div>
+            <p>Nenhuma mensagem ainda</p>
+            <p>Seja o primeiro a enviar uma mensagem!</p>
+          </div>
+        )}
+
         {messages.map((message) => {
-          const replyMsg = message.replyTo ? getReplyMessage(message.replyTo) : null;
+          const replyMsg = message.reply_to ? getReplyMessage(message.reply_to) : null;
+          const isOwn = isOwnMessage(message);
           
           return (
             <div 
               key={message.id} 
-              className={`message ${message.isOwn ? 'own-message' : 'other-message'} ${message.isBot ? 'bot-message' : ''} ${message.isChannelPost ? 'channel-message' : ''}`}
+              className={`message ${isOwn ? 'own-message' : 'other-message'} ${message.is_bot ? 'bot-message' : ''}`}
             >
-              {!message.isOwn && (
+              {!isOwn && (
                 <Avatar className="message-avatar">
                   <AvatarImage src={chat.avatar} />
-                  <AvatarFallback>{message.sender.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>{message.sender_name?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
               )}
               
               <div className="message-content">
-                {!message.isOwn && (chat.type === 'group' || chat.type === 'channel') && (
-                  <span className="message-sender">{message.sender}</span>
+                {!isOwn && (chat.type === 'group' || chat.type === 'channel') && (
+                  <span className="message-sender">{message.sender_name}</span>
                 )}
                 
                 {replyMsg && (
                   <div className="reply-preview">
                     <div className="reply-line"></div>
                     <div className="reply-content">
-                      <span className="reply-sender">{replyMsg.sender}</span>
+                      <span className="reply-sender">{replyMsg.sender_name}</span>
                       <p className="reply-text">{replyMsg.text}</p>
                     </div>
                   </div>
@@ -195,23 +178,20 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
                 
                 <p className="message-text">{message.text}</p>
                 
-                {message.isEdited && (
+                {message.is_edited && (
                   <span className="edited-badge">editada</span>
                 )}
                 
-                {message.isSecret && (
+                {message.is_secret && (
                   <div className="secret-message-info">
                     <span className="secret-badge">🔒 Mensagem Secreta</span>
-                    {message.selfDestruct && (
-                      <span className="destruct-timer">🕐 {message.selfDestruct}</span>
-                    )}
                   </div>
                 )}
                 
                 <div className="message-footer">
-                  <span className="message-time">{message.time}</span>
+                  <span className="message-time">{formatTime(message.timestamp)}</span>
                   
-                  {message.isOwn && (
+                  {isOwn && (
                     <div className="message-status">
                       <svg className="read-indicator" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M20 6L9 17l-5-5"/>
@@ -230,28 +210,30 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
                   >
                     ↩️
                   </button>
-                  <button 
-                    className="action-btn forward-btn" 
-                    onClick={() => handleForward(message)}
-                    title="Encaminhar"
-                  >
-                    ➡️
-                  </button>
-                  {message.canEdit && (
-                    <button 
-                      className="action-btn edit-btn" 
-                      onClick={() => handleEdit(message)}
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
+                  {isOwn && (
+                    <>
+                      <button 
+                        className="action-btn edit-btn" 
+                        onClick={() => handleEdit(message)}
+                        title="Editar"
+                      >
+                        ✏️
+                      </button>
+                      <button 
+                        className="action-btn delete-btn" 
+                        onClick={() => handleDelete(message)}
+                        title="Excluir"
+                      >
+                        🗑️
+                      </button>
+                    </>
                   )}
                 </div>
                 
                 {/* Bot Quick Replies */}
-                {message.quickReplies && (
+                {message.quick_replies && message.quick_replies.length > 0 && (
                   <div className="quick-replies">
-                    {message.quickReplies.map((reply, index) => (
+                    {message.quick_replies.map((reply, index) => (
                       <button 
                         key={index}
                         className="quick-reply-btn"
@@ -267,22 +249,6 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
           );
         })}
         
-        {isTyping && (
-          <div className="typing-indicator">
-            <Avatar className="message-avatar">
-              <AvatarImage src={chat.avatar} />
-              <AvatarFallback>{chat.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="typing-content">
-              <div className="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <div ref={messagesEndRef} />
       </div>
 
@@ -292,7 +258,7 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
           <div className="reply-edit-content">
             {replyToMessage && (
               <>
-                <span className="action-label">↩️ Respondendo para {replyToMessage.sender}</span>
+                <span className="action-label">↩️ Respondendo para {replyToMessage.sender_name}</span>
                 <p className="reply-text">{replyToMessage.text}</p>
               </>
             )}
@@ -321,7 +287,7 @@ const ChatArea = ({ chat, onSendMessage, messages, setMessages }) => {
           </button>
           
           {chat?.type !== 'channel' && (
-            <button type="button" className="schedule-btn" title="Agendar mensagem" onClick={() => setShowScheduleModal(true)}>
+            <button type="button" className="schedule-btn" title="Agendar mensagem">
               <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12,6 12,12 16,14"/>
