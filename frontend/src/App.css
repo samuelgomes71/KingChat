@@ -1417,7 +1417,568 @@
   stroke-width: 2;
 }
 
-/* Responsive */
+/* Forward Modal Styles */
+.forward-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.forward-modal {
+  background: var(--king-white);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(74, 46, 20, 0.3);
+  overflow: hidden;
+}
+
+.forward-modal-header {
+  padding: 25px 25px 20px 25px;
+  background: linear-gradient(135deg, var(--king-primary), var(--king-accent));
+  color: var(--king-white);
+  position: relative;
+}
+
+.forward-modal-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.forward-subtitle {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.forward-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.forward-search {
+  margin-bottom: 15px;
+}
+
+.forward-search-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--king-secondary);
+  border-radius: 25px;
+  font-size: 14px;
+  color: var(--king-text-primary);
+  background: var(--king-background);
+  transition: all 0.3s ease;
+}
+
+.forward-search-input:focus {
+  outline: none;
+  border-color: var(--king-accent);
+  box-shadow: 0 0 0 3px rgba(169, 123, 80, 0.1);
+}
+
+.forward-caption {
+  margin-bottom: 15px;
+}
+
+.forward-caption-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--king-secondary);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--king-text-primary);
+  background: var(--king-background);
+  resize: vertical;
+  min-height: 50px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.forward-caption-input:focus {
+  outline: none;
+  border-color: var(--king-accent);
+  box-shadow: 0 0 0 3px rgba(169, 123, 80, 0.1);
+}
+
+.selected-counter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--king-secondary);
+  padding: 10px 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.counter-badge {
+  background: var(--king-primary);
+  color: var(--king-white);
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.clear-selection {
+  background: none;
+  border: none;
+  color: var(--king-accent);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.clear-selection:hover {
+  background: rgba(169, 123, 80, 0.1);
+}
+
+.forward-contacts-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.forward-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.forward-contact-item:hover {
+  background: var(--king-secondary);
+}
+
+.forward-contact-item.selected {
+  background: rgba(169, 123, 80, 0.1);
+  border: 2px solid var(--king-accent);
+}
+
+.contact-checkbox {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--king-secondary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--king-white);
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+  background: var(--king-accent);
+  border-color: var(--king-accent);
+}
+
+.contact-avatar {
+  width: 45px;
+  height: 45px;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--king-text-primary);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contact-type-icon {
+  font-size: 14px;
+}
+
+.contact-type {
+  font-size: 12px;
+  color: var(--king-text-secondary);
+  opacity: 0.8;
+}
+
+.no-contacts {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--king-text-secondary);
+}
+
+.no-contacts-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.forward-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 25px;
+  background: var(--king-background);
+  border-top: 1px solid var(--king-secondary);
+}
+
+.forward-modal-footer button {
+  flex: 1;
+}
+
+/* Privacy Modal Styles */
+.privacy-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.privacy-modal {
+  background: var(--king-white);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(74, 46, 20, 0.3);
+  overflow: hidden;
+}
+
+.privacy-modal-header {
+  padding: 25px 25px 20px 25px;
+  background: linear-gradient(135deg, var(--king-primary), var(--king-accent));
+  color: var(--king-white);
+  position: relative;
+}
+
+.privacy-modal-header h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.privacy-subtitle {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.privacy-tabs {
+  display: flex;
+  background: var(--king-background);
+  border-bottom: 1px solid var(--king-secondary);
+}
+
+.privacy-tab {
+  flex: 1;
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  color: var(--king-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.privacy-tab.active {
+  color: var(--king-accent);
+  border-bottom-color: var(--king-accent);
+  background: var(--king-white);
+}
+
+.privacy-tab:hover {
+  color: var(--king-accent);
+  background: rgba(169, 123, 80, 0.05);
+}
+
+.privacy-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 25px;
+}
+
+.privacy-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: var(--king-text-primary);
+  font-weight: 600;
+}
+
+.section-description {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: var(--king-text-secondary);
+  line-height: 1.5;
+}
+
+.privacy-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--king-secondary);
+}
+
+.privacy-setting:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  flex: 1;
+}
+
+.setting-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--king-text-primary);
+  margin-bottom: 5px;
+}
+
+.setting-icon {
+  font-size: 16px;
+}
+
+.setting-description {
+  font-size: 13px;
+  color: var(--king-text-secondary);
+  line-height: 1.4;
+}
+
+.privacy-toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.privacy-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--king-secondary);
+  border-radius: 28px;
+  transition: all 0.3s ease;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background: var(--king-white);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.privacy-toggle input:checked + .toggle-slider {
+  background: var(--king-accent);
+}
+
+.privacy-toggle input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+
+.contact-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: var(--king-background);
+  border-radius: 12px;
+}
+
+.contact-header .contact-avatar {
+  width: 50px;
+  height: 50px;
+}
+
+.contact-header h4 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  color: var(--king-text-primary);
+}
+
+.contact-header p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--king-text-secondary);
+}
+
+.privacy-subsection {
+  margin-bottom: 30px;
+}
+
+.privacy-subsection h5 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: var(--king-accent);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--king-secondary);
+}
+
+.privacy-note {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(169, 123, 80, 0.1);
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.note-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.note-text {
+  font-size: 13px;
+  color: var(--king-text-primary);
+  line-height: 1.4;
+}
+
+.privacy-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 25px;
+  background: var(--king-background);
+  border-top: 1px solid var(--king-secondary);
+}
+
+.privacy-modal-footer button {
+  flex: 1;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: var(--king-white);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .forward-modal,
+  .privacy-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .privacy-tabs {
+    flex-direction: column;
+  }
+
+  .privacy-tab {
+    border-bottom: 1px solid var(--king-secondary);
+    border-right: none;
+  }
+
+  .privacy-tab.active {
+    border-bottom: 1px solid var(--king-secondary);
+    border-left: 4px solid var(--king-accent);
+  }
+
+  .contact-header {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* Scrollbar Styles for modals */
+.forward-contacts-list::-webkit-scrollbar,
+.privacy-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.forward-contacts-list::-webkit-scrollbar-track,
+.privacy-modal-body::-webkit-scrollbar-track {
+  background: var(--king-secondary);
+}
+
+.forward-contacts-list::-webkit-scrollbar-thumb,
+.privacy-modal-body::-webkit-scrollbar-thumb {
+  background: var(--king-accent);
+  border-radius: 3px;
+}
+
+.forward-contacts-list::-webkit-scrollbar-thumb:hover,
+.privacy-modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--king-primary);
+}
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
