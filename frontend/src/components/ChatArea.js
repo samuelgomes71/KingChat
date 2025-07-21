@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../ui/button.jsx';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
+import ForwardModal from './ForwardModal';
+import PrivacySettingsModal from './PrivacySettingsModal';
+import { messageService } from '../services/messageService';
+import { privacyService } from '../services/privacyService';
+import { useToast } from '../hooks/use-toast';
 
 const ChatArea = ({ 
   chat, 
@@ -14,7 +19,12 @@ const ChatArea = ({
   const [newMessage, setNewMessage] = useState('');
   const [replyToMessage, setReplyToMessage] = useState(null);
   const [editingMessage, setEditingMessage] = useState(null);
+  const [showForwardModal, setShowForwardModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [forwardingMessage, setForwardingMessage] = useState(null);
+  const [availableContacts, setAvailableContacts] = useState([]);
   const messagesEndRef = useRef(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -23,6 +33,20 @@ const ChatArea = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load contacts for forwarding
+  useEffect(() => {
+    loadContactsForForward();
+  }, []);
+
+  const loadContactsForForward = async () => {
+    try {
+      const contacts = await messageService.getContactsForForward();
+      setAvailableContacts(contacts);
+    } catch (error) {
+      console.error('Failed to load contacts:', error);
+    }
+  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -75,6 +99,77 @@ const ChatArea = ({
     }
   };
 
+  const handleForward = (message) => {
+    setForwardingMessage(message);
+    setShowForwardModal(true);
+  };
+
+  const handleForwardSubmit = async (forwardData) => {
+    if (!forwardingMessage) return;
+
+    try {
+      const result = await messageService.forwardMessageUnlimited(
+        forwardingMessage.id, 
+        forwardData
+      );
+
+      if (result.total_sent > 0) {
+        toast({
+          title: "✅ Mensagem Encaminhada!",
+          description: `Enviada com sucesso para ${result.total_sent} contato${result.total_sent !== 1 ? 's' : ''}${result.total_failed > 0 ? ` (${result.total_failed} falharam)` : ''}`,
+        });
+      }
+
+      if (result.total_failed > 0 && result.total_sent === 0) {
+        toast({
+          title: "❌ Falha no Encaminhamento",
+          description: `Não foi possível enviar para nenhum dos ${result.total_failed} contatos selecionados`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Forward failed:', error);
+      toast({
+        title: "❌ Erro no Encaminhamento",
+        description: "Falha ao encaminhar mensagem. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePrivacySettings = () => {
+    setShowPrivacyModal(true);
+  };
+
+  const handleSavePrivacySettings = async (settings) => {
+    try {
+      if (chat) {
+        // Contact-specific settings
+        await privacyService.updateContactPrivacySettings({
+          contact_user_id: chat.id,
+          ...settings
+        });
+        toast({
+          title: "🔒 Configurações Atualizadas",
+          description: `Privacidade configurada para ${chat.name}`,
+        });
+      } else {
+        // Global settings
+        await privacyService.updateGlobalPrivacySettings(settings);
+        toast({
+          title: "🔒 Configurações Globais Atualizadas",
+          description: "Suas configurações de privacidade foram salvas",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "❌ Erro",
+        description: "Falha ao salvar configurações de privacidade",
+        variant: "destructive"
+      });
+    }
+  };
+
   const cancelReply = () => {
     setReplyToMessage(null);
   };
@@ -116,12 +211,23 @@ const ChatArea = ({
           <h3>👑 Bem-vindo ao KingChat</h3>
           <p>A nova era das conversas inteligentes chegou!</p>
           <div className="features-preview">
-            <div className="feature">🤖 Bots Inteligentes</div>
+            <div className="feature" onClick={() => setShowPrivacyModal(true)}>
+              🔒 Configurações de Privacidade
+            </div>
             <div className="feature">📢 Canais Premium</div>
-            <div className="feature">🔒 Chats Secretos</div>
+            <div className="feature">🤖 Bots Inteligentes</div>
             <div className="feature">⏰ Mensagens Programadas</div>
           </div>
         </div>
+        
+        {/* Privacy Modal (can be opened from no-chat state for global settings) */}
+        <PrivacySettingsModal
+          isOpen={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)}
+          currentChat={null}
+          onSaveSettings={handleSavePrivacySettings}
+          currentUser={currentUser}
+        />
       </div>
     );
   }
@@ -176,6 +282,12 @@ const ChatArea = ({
                   </div>
                 )}
                 
+                {message.forwarded_from && (
+                  <div className="forwarded-info">
+                    📤 <span>Mensagem encaminhada</span>
+                  </div>
+                )}
+                
                 <p className="message-text">{message.text}</p>
                 
                 {message.is_edited && (
@@ -209,6 +321,13 @@ const ChatArea = ({
                     title="Responder"
                   >
                     ↩️
+                  </button>
+                  <button 
+                    className="action-btn forward-btn" 
+                    onClick={() => handleForward(message)}
+                    title="Encaminhar (Ilimitado)"
+                  >
+                    📤
                   </button>
                   {isOwn && (
                     <>
@@ -286,6 +405,15 @@ const ChatArea = ({
             </svg>
           </button>
           
+          <button 
+            type="button" 
+            className="privacy-btn" 
+            title="Configurações de Privacidade"
+            onClick={handlePrivacySettings}
+          >
+            🔒
+          </button>
+          
           {chat?.type !== 'channel' && (
             <button type="button" className="schedule-btn" title="Agendar mensagem">
               <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -334,6 +462,26 @@ const ChatArea = ({
           </svg>
         </Button>
       </form>
+
+      {/* Forward Modal */}
+      <ForwardModal
+        isOpen={showForwardModal}
+        onClose={() => {
+          setShowForwardModal(false);
+          setForwardingMessage(null);
+        }}
+        onForward={handleForwardSubmit}
+        availableContacts={availableContacts}
+      />
+
+      {/* Privacy Settings Modal */}
+      <PrivacySettingsModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        currentChat={chat}
+        onSaveSettings={handleSavePrivacySettings}
+        currentUser={currentUser}
+      />
     </div>
   );
 };
