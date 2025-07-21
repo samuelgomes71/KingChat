@@ -1307,7 +1307,8 @@
 .attach-btn,
 .schedule-btn,
 .poll-btn,
-.privacy-btn {
+.privacy-btn,
+.keyboard-btn {
   background: transparent;
   border: none;
   width: 40px;
@@ -1325,13 +1326,68 @@
 .attach-btn:hover,
 .schedule-btn:hover,
 .poll-btn:hover,
-.privacy-btn:hover {
+.privacy-btn:hover,
+.keyboard-btn:hover {
   background: var(--king-secondary);
   transform: scale(1.1);
 }
 
 .privacy-btn {
   font-size: 18px;
+}
+
+.keyboard-btn {
+  font-size: 18px;
+  background: linear-gradient(135deg, var(--king-primary), var(--king-accent));
+  color: var(--king-white);
+  position: relative;
+}
+
+.keyboard-btn::after {
+  content: '👑';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 10px;
+  background: var(--king-premium);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keyboard-btn:hover {
+  background: linear-gradient(135deg, var(--king-accent), var(--king-premium));
+  transform: scale(1.15);
+  box-shadow: 0 4px 15px rgba(169, 123, 80, 0.4);
+}
+
+/* Quick features in empty state */
+.quick-features {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.feature-btn {
+  background: var(--king-accent);
+  color: var(--king-white);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.feature-btn:hover {
+  background: var(--king-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(169, 123, 80, 0.3);
 }
 
 /* Forwarded message info */
