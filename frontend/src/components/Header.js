@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.jsx';
 
-const Header = ({ currentChat, onProfileClick }) => {
-  const [showChatInfo, setShowChatInfo] = useState(false);
+const Header = ({ currentChat, currentUser, onProfileClick, onLogout }) => {
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const getChatStatus = (chat) => {
     if (!chat) return '';
     
     switch (chat.type) {
       case 'channel':
-        return `📢 ${chat.subscribers?.toLocaleString()} inscritos ${chat.isAdmin ? '• Admin' : ''}`;
+        return `📢 ${chat.subscribers_count?.toLocaleString()} inscritos ${chat.is_admin ? '• Admin' : ''}`;
       case 'group':
-        return `👥 ${chat.members} membros`;
+        return `👥 ${chat.members?.length || 0} membros`;
       case 'bot':
         return '🤖 Bot Inteligente • Sempre ativo';
       case 'private':
-        if (chat.hasSecretChat) return '🔒 Chat Secreto';
-        return chat.isOnline ? '🟢 Online' : '⚪ Última vez há 5 min';
+        if (chat.has_secret_chat) return '🔒 Chat Secreto';
+        return chat.is_online ? '🟢 Online' : '⚪ Última vez há 5 min';
       default:
-        return chat?.isOnline ? '🟢 Online' : '⚪ Última vez há 5 min';
+        return chat?.is_online ? '🟢 Online' : '⚪ Última vez há 5 min';
     }
   };
 
@@ -36,16 +36,12 @@ const Header = ({ currentChat, onProfileClick }) => {
           ...baseActions,
           { icon: "📊", title: "Estatísticas do canal", action: "stats" },
           { icon: "👥", title: "Inscritos", action: "subscribers" },
-          ...(chat.isAdmin ? [
-            { icon: "⚙️", title: "Configurações do canal", action: "settings" }
-          ] : [])
         ];
       case 'group':
         return [
           ...baseActions,
           { icon: "👥", title: "Membros do grupo", action: "members" },
           { icon: "📎", title: "Arquivos compartilhados", action: "media" },
-          { icon: "⚙️", title: "Configurações do grupo", action: "settings" }
         ];
       case 'bot':
         return [
@@ -59,9 +55,6 @@ const Header = ({ currentChat, onProfileClick }) => {
           { icon: "📞", title: "Chamada de voz", action: "voice_call" },
           { icon: "📹", title: "Chamada de vídeo", action: "video_call" },
           { icon: "📎", title: "Arquivos compartilhados", action: "media" },
-          ...(chat.hasSecretChat ? [
-            { icon: "🔒", title: "Configurações do chat secreto", action: "secret_settings" }
-          ] : [])
         ];
     }
   };
@@ -80,14 +73,16 @@ const Header = ({ currentChat, onProfileClick }) => {
           alt="Crown" 
           className="crown-icon"
         />
-        <h1 className="app-title">KingChat</h1>
-        <div className="app-subtitle">Conversas Reais</div>
+        <div className="app-info">
+          <h1 className="app-title">KingChat</h1>
+          <div className="app-subtitle">Conversas Reais</div>
+        </div>
       </div>
 
       {/* Current Chat Info */}
       {currentChat ? (
         <div className="chat-header">
-          <div className="chat-info" onClick={() => setShowChatInfo(!showChatInfo)}>
+          <div className="chat-info" onClick={onProfileClick}>
             <Avatar className="chat-avatar">
               <AvatarImage src={currentChat.avatar} />
               <AvatarFallback>{currentChat.name.charAt(0)}</AvatarFallback>
@@ -96,15 +91,15 @@ const Header = ({ currentChat, onProfileClick }) => {
               <div className="chat-name-row">
                 <h3 className="chat-name">{currentChat.name}</h3>
                 {currentChat.type === 'bot' && <span className="verified-badge">✅</span>}
-                {currentChat.type === 'channel' && currentChat.isAdmin && <span className="admin-crown">👑</span>}
-                {currentChat.hasSecretChat && <span className="secret-indicator">🔒</span>}
+                {currentChat.type === 'channel' && currentChat.is_admin && <span className="admin-crown">👑</span>}
+                {currentChat.has_secret_chat && <span className="secret-indicator">🔒</span>}
               </div>
               <p className="chat-status">{getChatStatus(currentChat)}</p>
             </div>
           </div>
           
           <div className="chat-actions">
-            {getChatActions(currentChat).map((action, index) => (
+            {getChatActions(currentChat).slice(0, 3).map((action, index) => (
               <button 
                 key={index}
                 className="action-btn" 
@@ -151,17 +146,51 @@ const Header = ({ currentChat, onProfileClick }) => {
           </div>
         </div>
       )}
-      
-      {/* Chat Info Modal */}
-      {showChatInfo && currentChat && (
-        <div className="chat-info-modal">
-          <div className="modal-content">
-            <button className="close-btn" onClick={() => setShowChatInfo(false)}>✕</button>
-            <h3>{currentChat.name}</h3>
-            <p>Informações detalhadas do chat apareceriam aqui</p>
+
+      {/* User Menu */}
+      <div className="user-menu-container">
+        <button 
+          className="user-menu-trigger"
+          onClick={() => setShowUserMenu(!showUserMenu)}
+        >
+          <Avatar className="user-avatar">
+            <AvatarImage src={currentUser?.avatar} />
+            <AvatarFallback>{currentUser?.name?.charAt(0) || 'U'}</AvatarFallback>
+          </Avatar>
+        </button>
+
+        {showUserMenu && (
+          <div className="user-menu">
+            <div className="user-info">
+              <Avatar className="user-menu-avatar">
+                <AvatarImage src={currentUser?.avatar} />
+                <AvatarFallback>{currentUser?.name?.charAt(0) || 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="user-details">
+                <p className="user-name">{currentUser?.name}</p>
+                <p className="user-status">
+                  {currentUser?.is_premium ? '👑 Premium' : 'Usuário'}
+                </p>
+              </div>
+            </div>
+            
+            <div className="user-menu-actions">
+              <button className="user-menu-item">
+                <span>⚙️</span>
+                <span>Configurações</span>
+              </button>
+              <button className="user-menu-item">
+                <span>🌙</span>
+                <span>Modo Escuro</span>
+              </button>
+              <button className="user-menu-item" onClick={onLogout}>
+                <span>🚪</span>
+                <span>Sair</span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
