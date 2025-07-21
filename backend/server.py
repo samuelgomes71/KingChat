@@ -272,17 +272,39 @@ async def remove_reaction_from_message(
         raise HTTPException(status_code=404, detail="Message not found")
     return message
 
-@api_router.post("/messages/{message_id}/forward")
-async def forward_message(
+@api_router.post("/messages/{message_id}/forward-unlimited", response_model=ForwardMessageResponse)
+async def forward_message_unlimited(
     message_id: str,
-    target_chat_id: str,
+    forward_request: ForwardMessageRequest,
     current_user: User = Depends(get_current_user)
 ):
-    """Forward a message to another chat"""
-    message = await MessageService.forward_message(message_id, target_chat_id, current_user.id, current_user.name)
-    if not message:
-        raise HTTPException(status_code=400, detail="Cannot forward this message")
-    return message
+    """Forward a message to unlimited chats (KingChat advantage!)"""
+    result = await MessageService.forward_message_unlimited(
+        message_id, 
+        forward_request.target_chat_ids, 
+        current_user.id, 
+        current_user.name,
+        forward_request.add_caption
+    )
+    return ForwardMessageResponse(**result)
+
+@api_router.get("/contacts/for-forward", response_model=List[ContactForForward])
+async def get_contacts_for_forward(current_user: User = Depends(get_current_user)):
+    """Get all contacts available for forwarding messages"""
+    chats = await ChatService.get_user_chats(current_user.id)
+    contacts = []
+    
+    for chat in chats:
+        contact = ContactForForward(
+            id=chat.id,
+            name=chat.name,
+            avatar=chat.avatar,
+            type=chat.type,
+            is_online=chat.is_online if hasattr(chat, 'is_online') else None
+        )
+        contacts.append(contact)
+    
+    return contacts
 
 # Search endpoints
 @api_router.get("/search/messages", response_model=List[Message])
