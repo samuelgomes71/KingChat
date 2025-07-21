@@ -284,6 +284,7 @@ class KingChatAPITester:
         # Test send text message
         try:
             message_data = {
+                "chat_id": test_chat_id,
                 "text": "Olá! Esta é uma mensagem de teste do KingChat! 👋",
                 "message_type": "text"
             }
