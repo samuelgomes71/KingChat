@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import ChatArea from './components/ChatArea';
 import { mockChats, currentUser } from './mock/data';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from './components/ui/toaster.jsx';
 
 function App() {
   const [chats, setChats] = useState(mockChats);
